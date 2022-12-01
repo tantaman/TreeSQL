@@ -1,3 +1,4 @@
 packages:
   - pkg/dialect
   - pkg/example
+  - pkg/react

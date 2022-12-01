@@ -103,7 +103,7 @@ function frag<T>(strings: TemplateStringsArray, ...values: any[]): Frag<T> {
     // but if we data diff, why dom diff?
     // we are pretty sure what'll be touched.
     //
-    // put db in worker for this approach
+    // put db in worker for this approach?
   };
 }
 

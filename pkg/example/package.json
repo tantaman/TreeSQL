@@ -15,6 +15,7 @@
   "dependencies": {
     "@vlcn.io/wa-crsqlite": "^0.4.1",
     "composed-sql": "workspace:*",
+    "composed-sql-react": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

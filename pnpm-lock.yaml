@@ -20,6 +20,7 @@ importers:
       '@types/react-dom': ^18.0.9
       '@vlcn.io/wa-crsqlite': ^0.4.1
       composed-sql: workspace:*
+      composed-sql-react: workspace:*
       react: ^18.2.0
       react-dom: ^18.2.0
       typescript: ^4.9.3
@@ -28,6 +29,7 @@ importers:
     dependencies:
       '@vlcn.io/wa-crsqlite': 0.4.1
       composed-sql: link:../dialect
+      composed-sql-react: link:../react
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
     devDependencies:
@@ -36,6 +38,15 @@ importers:
       typescript: 4.9.3
       typescript-plugin-css-modules: 3.4.0_typescript@4.9.3
       vite: 3.2.4
+
+  pkg/react:
+    specifiers:
+      composed-sql: workspace:*
+      typescript: ^4.9.3
+    dependencies:
+      composed-sql: link:../dialect
+    devDependencies:
+      typescript: 4.9.3
 
 packages:
 

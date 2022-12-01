@@ -1,3 +1,4 @@
 node_modules/
 .sl/
 dist/
+tsconfig.tsbuildinfo
