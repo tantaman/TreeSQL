@@ -5,16 +5,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "tsc": "tsc --noEmit",
+    "start": "vite",
+    "build": "vite build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@vlcn.io/wa-crsqlite": "^0.4.1",
-    "composed-sql": "workspace:*"
+    "composed-sql": "workspace:*",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "typescript": "^4.9.3"
+    "@types/react": "^18.0.25",
+    "@types/react-dom": "^18.0.9",
+    "typescript": "^4.9.3",
+    "typescript-plugin-css-modules": "^3.4.0",
+    "vite": "^3.2.4"
   }
 }

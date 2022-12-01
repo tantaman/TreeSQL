@@ -133,7 +133,7 @@ export default function parse(str: string): string {
   return adapter.toSQL();
 }
 
-export function sql(strings, ...values) {
+export function sql(strings: TemplateStringsArray, ...values: any[]) {
   const interoplated = String.raw({ raw: strings }, ...values);
   return parse(interoplated);
 }

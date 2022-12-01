@@ -1,4 +1,4 @@
-import parse, { sql } from "composed-sql";
+import { sql } from "composed-sql";
 import sqliteWasm from "@vlcn.io/wa-crsqlite";
 
 const sqlite = await sqliteWasm();
@@ -85,17 +85,36 @@ function frag<T>(strings: TemplateStringsArray, ...values: any[]): Frag<T> {
     count: ++fragCount,
     // TODO: should shadow fields
     // or should de-dupe fields in the final composed query
-    text: String.raw({ raw: strings }, ...values),
+    embedding: String.raw({ raw: strings }, ...values),
+    standalone: "the embedding but as standalone",
+    // ^- field only frags have no standalone?
+    // the _simplest_ first pass would be to
+    // not do any splitting and literally
+    // re-run the whole composed query then _diff_
+    // by frag.
+    // - data comes in
+    // - we mutate frag refs on props (yes, mutate a prop)
+    // - useFrag listens to those refs
+    // - useFrag diffs
+    // - if different, set state
+    //
+    // can we rm react then? since react
+    // will dom diff too
+    // but if we data diff, why dom diff?
+    // we are pretty sure what'll be touched.
+    //
+    // put db in worker for this approach
   };
 }
 
 type Frag<T> = {
-  text: string;
+  embedding: string;
+  standalone: string;
   count: number;
 };
 
 function include<T>(frag: Frag<T>) {
-  return frag.text;
+  return frag.embedding;
 }
 
 const albumFrag = frag`
