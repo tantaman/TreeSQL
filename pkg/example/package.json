@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@vlcn.io/rx-tbl": "^0.3.0",
     "@vlcn.io/wa-crsqlite": "^0.4.1",
     "composed-sql": "workspace:*",
     "composed-sql-react": "workspace:*",

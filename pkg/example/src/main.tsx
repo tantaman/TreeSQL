@@ -4,25 +4,34 @@ import { sql, parse } from "composed-sql";
 // @ts-ignore
 import wasmUrl from "@vlcn.io/wa-crsqlite/wa-sqlite-async.wasm?url";
 import sqliteWasm from "@vlcn.io/wa-crsqlite";
+import tblrx from "@vlcn.io/rx-tbl";
 import { createSchema } from "./schema";
-import { useQueryA } from "composed-sql-react";
+import { Ctx, useQueryA, useQueryJ } from "composed-sql-react";
 
 async function main() {
   const sqlite = await sqliteWasm((file) => wasmUrl);
 
   const db = await sqlite.open(":memory:");
   (window as any).db = db;
+  const rx = await tblrx(db);
 
   await createSchema(db);
 
   const root = createRoot(document.getElementById("content")!);
-  root.render(<App />);
+  root.render(
+    <App
+      ctx={{
+        db,
+        rx,
+      }}
+    />
+  );
 }
 
-function App() {
+function App({ ctx }: { ctx: Ctx }) {
   return (
     <div>
-      <Playlist playlistId={1} />
+      <Playlist ctx={ctx} playlistId={1} />
     </div>
   );
 }
@@ -42,7 +51,7 @@ const trackFrag = sql`
   id: t.TrackId,
   name: t.Name,
   album: (SELECT Album.Title FROM Album WHERE Album.AlbumId = t.AlbumId),
-  duration: t.Milliseconods,
+  duration: t.Milliseconds,
   artists: ${artistsFrag}
 `;
 
@@ -55,21 +64,35 @@ type Track = {
 };
 function Track({ track }: { track: Track }) {}
 
+// TODO: need a better way to impose
+// limits on json_group_array rather than selecting
+// from limited sub-select.
+// We should extend the grammar to parse out limits and offsets
+// and re-roll the query in those cases
 const playlistQuery = sql`
 SELECT {
   id: p.PlaylistId,
   name: p.Name,
   tracks: [SELECT {
     ${trackFrag}
-  } FROM PlaylistTrack AS pt JOIN Track AS t ON t.TrackId = pt.TrackId WHERE pt.PlaylistId = p.PlaylistId]
+  } FROM (SELECT * FROM PlaylistTrack AS pt
+    JOIN Track ON Track.TrackId = pt.TrackId
+    WHERE pt.PlaylistId = p.PlaylistId
+    LIMIT 200) as t]
 } FROM Playlist AS p WHERE p.PlaylistId = ?`;
 type Playlist = {
   tracks: Track[];
 };
 
-function Playlist({ playlistId }: { playlistId: number }) {
-  // useQueryA([])
-  console.log(parse(playlistQuery));
+console.log(parse(playlistQuery));
+function Playlist({ ctx, playlistId }: { ctx: Ctx; playlistId: number }) {
+  const data = useQueryJ(
+    ctx,
+    ["Playlist", "Album", "Track", "Artist", "PlaylistTrack"],
+    playlistQuery,
+    [playlistId]
+  );
+  console.log(data);
   return <div>playlist</div>;
 }
 

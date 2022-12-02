@@ -22,7 +22,7 @@ export type Query<R, T extends string, M = R[]> =
 // TODO: `useQuery` should prepare a statement
 function useQueryImpl<R, T extends string, M = R>(
   [ctx, tables, query, bindings, postProcess]: Query<R, T, M>,
-  mode: "o" | "a"
+  mode: "o" | "a" | "j"
 ): QueryData<M> {
   const [state, setState] = useState<QueryData<M>>({
     data: postProcess != null ? postProcess([]) : ([] as any),
@@ -32,7 +32,10 @@ function useQueryImpl<R, T extends string, M = R>(
   useEffect(() => {
     let isMounted = true;
 
-    const compiledQuery = parse(query);
+    let compiledQuery = query;
+    if (mode == "j") {
+      compiledQuery = parse(query);
+    }
 
     const runQuery = (changedTbls: Set<string> | null, stmt: StmtAsync) => {
       if (!isMounted) {
@@ -68,7 +71,7 @@ function useQueryImpl<R, T extends string, M = R>(
     let disposer = () => {};
     let stmtOuter: StmtAsync | null = null;
     ctx.db.prepare(compiledQuery).then((stmt) => {
-      if (mode === "a") {
+      if (mode === "a" || mode == "j") {
         stmt.raw(true);
       }
       if (!isMounted) {
@@ -98,6 +101,29 @@ export function useQuery<R, T extends string, M = R>(
   return useQueryImpl(q, "o");
 }
 
+export function useQueryJ<R, T extends string, M = R>(
+  ctx: Ctx,
+  tables: T[],
+  query: string,
+  bindings: any[] = []
+) {
+  return useQueryImpl<R, T, M>(
+    [
+      ctx,
+      tables,
+      query,
+      bindings,
+      (data: any[]) => {
+        if (data.length == 1) {
+          return JSON.parse(data[0]);
+        }
+        return data.map((d) => JSON.parse(d));
+      },
+    ],
+    "j"
+  );
+}
+
 export function useQueryA<R, T extends string, M = R>(
   q: Query<R, T, M>
 ): QueryData<M> {
@@ -120,8 +146,6 @@ export function firstPick<T>(data: any[]): T | undefined {
   return d[Object.keys(d)[0]];
 }
 
-// TODO -- roll these into `useQuery` so we don't have to
-// re-run them...
 export function pick0<T extends any[]>(data: T[]): T[0][] {
   return data.map((d) => d[0]);
 }

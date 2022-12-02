@@ -15,14 +15,11 @@ CompSQL {
     = "{" PropertyList "}" caseInsensitive<"FROM"> Rest
 
   Rest
-  	= AllButClose -- allButClose
-    | AllButOpen "[" Rest "]" Rest -- allButOpen
+  	= AllButOpenOrClose "(" Rest ")" Rest -- paren
+    | AllButOpenOrClose "[" Rest "]" Rest -- brack
+    | AllButOpenOrClose
  
-  AllButOpen =
-  	(~("["|"(") any)*
-  
-  AllButClose =
-    (~("]"|"["|")"|"(") any)*
+  AllButOpenOrClose = (~("]"|"["|")"|"(") any)*
     
   PropertyList
   	= PropertyList Property ","? -- list
@@ -70,19 +67,19 @@ semantics.addOperation("toSQL", {
     )) FROM ${rest.toSQL()}`;
   },
 
-  Rest_allButOpen(allButOpen, _lParen, r1, _rParen, r2) {
-    return `${allButOpen.toSQL()} (${r1.toSQL()}) ${r2.toSQL()}`;
+  Rest(all) {
+    return all.toSQL();
   },
 
-  Rest_allButClose(allButClose) {
-    return allButClose.toSQL();
+  Rest_brack(all, _lParen, rest, _rParen, rest2) {
+    return `${all.toSQL()} (${rest.toSQL()}) ${rest2.toSQL()}`;
   },
 
-  AllButOpen(s) {
-    return s.sourceString;
+  Rest_paren(all, _lParen, rest, _rParen, rest2) {
+    return `${all.toSQL()} (${rest.toSQL()}) ${rest2.toSQL()}`;
   },
 
-  AllButClose(s) {
+  AllButOpenOrClose(s) {
     return s.sourceString;
   },
 
