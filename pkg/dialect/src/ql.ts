@@ -123,7 +123,7 @@ semantics.addOperation("toSQL", {
   },
 });
 
-export default function parse(str: string): string {
+export function parse(str: string): string {
   const matchResult = grammar.match(str);
   if (matchResult.failed()) {
     throw new Error(matchResult.message);
@@ -134,6 +134,5 @@ export default function parse(str: string): string {
 }
 
 export function sql(strings: TemplateStringsArray, ...values: any[]) {
-  const interoplated = String.raw({ raw: strings }, ...values);
-  return parse(interoplated);
+  return String.raw({ raw: strings }, ...values);
 }

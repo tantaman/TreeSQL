@@ -1,49 +1,129 @@
-let fragCount = 0;
+import { useEffect, useState } from "react";
+import { DBAsync, StmtAsync } from "@vlcn.io/xplat-api";
+import tblrx from "@vlcn.io/rx-tbl";
+import { parse } from "composed-sql";
 
-export function frag<T>(
-  strings: TemplateStringsArray,
-  ...values: any[]
-): Frag<T> {
-  return {
-    count: ++fragCount,
-    // TODO: should shadow fields
-    // or should de-dupe fields in the final composed query
-    embedding: String.raw({ raw: strings }, ...values),
-    // ^- field only frags have no standalone?
-    // the _simplest_ first pass would be to
-    // not do any splitting and literally
-    // re-run the whole composed query then _diff_
-    // by frag.
-    // - data comes in
-    // - we mutate frag refs on props (yes, mutate a prop)
-    // - useFrag listens to those refs
-    // - useFrag diffs
-    // - if different, set state
-    //
-    // can we rm react then? since react
-    // will dom diff too
-    // but if we data diff, why dom diff?
-    // we are pretty sure what'll be touched.
-    //
-    // put db in worker for this approach?
-  };
-}
-
-export type Frag<T> = {
-  embedding: string;
-  standalone?: string;
-  count: number;
+export type Ctx = {
+  db: DBAsync;
+  rx: Awaited<ReturnType<typeof tblrx>>;
 };
 
-export function include<T>(frag: Frag<T>) {
-  return frag.embedding;
+type QueryData<M> = {
+  loading: boolean;
+  error?: Error;
+  data: M;
+};
+
+type SQL<R> = string;
+export type Query<R, T extends string, M = R[]> =
+  | [Ctx, T[], SQL<R>, any[]]
+  | [Ctx, T[], SQL<R>, any[], (x: R[]) => M];
+
+// TODO: `useQuery` should prepare a statement
+function useQueryImpl<R, T extends string, M = R>(
+  [ctx, tables, query, bindings, postProcess]: Query<R, T, M>,
+  mode: "o" | "a"
+): QueryData<M> {
+  const [state, setState] = useState<QueryData<M>>({
+    data: postProcess != null ? postProcess([]) : ([] as any),
+    loading: true,
+  });
+  // TODO: counting / logging to ensure this runs as often as expected
+  useEffect(() => {
+    let isMounted = true;
+
+    const compiledQuery = parse(query);
+
+    const runQuery = (changedTbls: Set<string> | null, stmt: StmtAsync) => {
+      if (!isMounted) {
+        return;
+      }
+
+      if (changedTbls != null) {
+        if (!tables.some((t) => changedTbls.has(t))) {
+          return;
+        }
+      }
+
+      stmt.all(...bindings).then((data) => {
+        if (!isMounted) {
+          return;
+        }
+        try {
+          setState({
+            data:
+              postProcess != null
+                ? // TODO: postProcess should work on full dataset for more flexibility
+                  postProcess((data as R[]) || [])
+                : (data as M),
+            loading: false,
+          });
+        } catch (e) {
+          console.error("Failed post-processing data for query: " + query);
+          throw e;
+        }
+      });
+    };
+
+    let disposer = () => {};
+    let stmtOuter: StmtAsync | null = null;
+    ctx.db.prepare(compiledQuery).then((stmt) => {
+      if (mode === "a") {
+        stmt.raw(true);
+      }
+      if (!isMounted) {
+        stmt.finalize();
+        return;
+      }
+      stmtOuter = stmt;
+      disposer = ctx.rx.on((tbls) => runQuery(tbls, stmt));
+
+      // initial kickoff to get initial data.
+      runQuery(null, stmt);
+    });
+
+    return () => {
+      isMounted = false;
+      stmtOuter?.finalize();
+      disposer();
+    };
+  }, [query, ...(bindings || [])]);
+
+  return state;
 }
 
-// can only frag on fields
-export function useFrag<T>(fragment: Frag<T>, data: T) {
-  // if there's a select we can hoist it separately?
-  // and bind to it separately?
-  // 1. run the query
-  // 2. subscribe to it
-  // 3. pull semantics from it
+export function useQuery<R, T extends string, M = R>(
+  q: Query<R, T, M>
+): QueryData<M> {
+  return useQueryImpl(q, "o");
 }
+
+export function useQueryA<R, T extends string, M = R>(
+  q: Query<R, T, M>
+): QueryData<M> {
+  return useQueryImpl(q, "a");
+}
+
+export function first<T>(data: T[]): T | undefined {
+  if (!data) {
+    return undefined;
+  }
+  return data[0];
+}
+
+export function firstPick<T>(data: any[]): T | undefined {
+  const d = data[0];
+  if (d == null) {
+    return undefined;
+  }
+
+  return d[Object.keys(d)[0]];
+}
+
+// TODO -- roll these into `useQuery` so we don't have to
+// re-run them...
+export function pick0<T extends any[]>(data: T[]): T[0][] {
+  return data.map((d) => d[0]);
+}
+
+export function useBind<T extends keyof D, D>(keys: T[], d?: D) {}

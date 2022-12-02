@@ -7,13 +7,21 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc --build"
   },
-  "dependencies": {
-    "composed-sql": "workspace:*"
+  "peerDependencies": {
+    "composed-sql": "workspace:*",
+    "react": "^18.2.0"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/react": "^18.0.25",
+    "composed-sql": "workspace:*",
+    "react": "^18.2.0",
     "typescript": "^4.9.3"
+  },
+  "dependencies": {
+    "@vlcn.io/rx-tbl": "^0.3.0",
+    "@vlcn.io/xplat-api": "^0.3.0"
   }
 }
