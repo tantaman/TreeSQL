@@ -17,5 +17,5 @@
     "plugins": [{ "name": "typescript-plugin-css-modules" }]
   },
   "include": ["./src/"],
-  "references": [{ "path": "../dialect" }]
+  "references": [{ "path": "../dialect" }, { "path": "../react" }]
 }
