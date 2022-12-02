@@ -4,10 +4,16 @@ import { sql } from "composed-sql";
 // @ts-ignore
 import wasmUrl from "@vlcn.io/wa-crsqlite/wa-sqlite-async.wasm?url";
 import sqliteWasm from "@vlcn.io/wa-crsqlite";
-
-type TODO = any;
+import { createSchema } from "./schema";
 
 async function main() {
+  const sqlite = await sqliteWasm((file) => wasmUrl);
+
+  const db = await sqlite.open(":memory:");
+  (window as any).db = db;
+
+  await createSchema(db);
+
   const root = createRoot(document.getElementById("content")!);
   root.render(<App />);
 }
@@ -59,4 +65,4 @@ SELECT {
 type Playlist = {
   tracks: Track[];
 };
-function Playlist({ playlist }: { playlist: Playlist }) {}
+function Playlist({ playlistId }: { playlistId: string }) {}
