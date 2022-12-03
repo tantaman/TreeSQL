@@ -55,26 +55,69 @@ yields ->
 via ->
 
 ```sql
-SELECT {
-  tracks: [SELECT {
-    addedAt: tp.added_at_timestamp,
-    trackNumber: tp.track_index,
-    track: (SELECT {
-      id: t.id,
-      name: t.name,
-      durationMs: t.duration_ms,
-      trackNumer: t.track_number,
-      album: (SELECT a.name FROM spotify_albums AS a WHERE a.id = t.album_id),
-      artists: [SELECT {
-        id: art.id,
-        name: art.name
-      } FROM spotify_artists AS art
-        LEFT JOIN spotify_tracks_artists AS ta
-        ON ta.artist_id = art.id
-        WHERE ta.track_id = t.id],
-    } FROM spotify_tracks AS t WHERE t.id = tp.track_id)
-  } FROM spotify_tracks_playlists as tp WHERE tp.playlist_id = p.id]
-} FROM spotify_playlists AS p WHERE p.id = ?
+SELECT
+  json_object(
+    'tracks',
+    (
+      SELECT
+        json_group_array(
+          json_object(
+            'addedAt',
+            tp.added_at_timestamp,
+            'trackNumber',
+            tp.track_index,
+            'track',
+            (
+              SELECT
+                json_object(
+                  'id',
+                  t.id,
+                  'name',
+                  t.name,
+                  'durationMs',
+                  t.duration_ms,
+                  'trackNumer',
+                  t.track_number,
+                  'album',
+                  (
+                    SELECT
+                      a.name
+                    FROM
+                      spotify_albums AS a
+                    WHERE
+                      a.id = t.album_id
+                  ),
+                  'artists',
+                  (
+                    SELECT
+                      json_group_array(
+                        json_object('id', art.id, 'name', art.name)
+                      )
+                    FROM
+                      spotify_artists AS art
+                      LEFT JOIN spotify_tracks_artists AS ta ON ta.artist_id = art.id
+                    WHERE
+                      ta.track_id = t.id
+                  )
+                )
+              FROM
+                spotify_tracks AS t
+              WHERE
+                t.id = tp.track_id
+            )
+          )
+        )
+      FROM
+        spotify_tracks_playlists as tp
+      WHERE
+        tp.playlist_id = p.id
+    )
+  )
+FROM
+  spotify_playlists AS p
+WHERE
+  p.id = ?
+
 ```
 
 Added bonus -- it compiles to plain SQL.
