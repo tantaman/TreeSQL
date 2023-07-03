@@ -1,5 +1,7 @@
 # composed-sql
 
+[![Screenshot 2023-07-03 at 11 09 31 AM](https://github.com/tantaman/composed-sql/assets/1009003/b2464563-d253-42cb-b8dd-0eaf76fde951)](https://twitter.com/schickling/status/1599076832107630594)
+
 A SQL that composes well and where the structure of the query matches the output of the query.
 
 ```sql
