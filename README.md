@@ -1,7 +1,6 @@
 # TreeSQL
 
-[![Screenshot 2023-07-12 at 10 59 48 AM](https://github.com/tantaman/TreeQL/assets/1009003/427e045e-3fae-4ad8-a3f1-60ca2849a240)
-94)](https://twitter.com/schickling/status/1599076832107630594)
+<a href="https://twitter.com/schickling/status/1599076832107630594"><img src="https://github.com/tantaman/TreeQL/assets/1009003/427e045e-3fae-4ad8-a3f1-60ca2849a240"/></a>
 
 A SQL that composes well and where the structure of the query matches the output of the query.
 
