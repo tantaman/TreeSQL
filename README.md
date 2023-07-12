@@ -1,6 +1,7 @@
-# composed-sql
+# TreeSQL
 
-[![Screenshot 2023-07-03 at 11 09 31 AM](https://github.com/tantaman/composed-sql/assets/1009003/b2464563-d253-42cb-b8dd-0eaf76fde951)](https://twitter.com/schickling/status/1599076832107630594)
+[![Screenshot 2023-07-12 at 10 59 48 AM](https://github.com/tantaman/TreeQL/assets/1009003/427e045e-3fae-4ad8-a3f1-60ca2849a240)
+94)](https://twitter.com/schickling/status/1599076832107630594)
 
 A SQL that composes well and where the structure of the query matches the output of the query.
 
