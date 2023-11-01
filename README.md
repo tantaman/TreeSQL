@@ -2,7 +2,6 @@
 
 This is just a prototype of an alternate SQL syntax to pull hierarchies.
 
-Looking for TypedSQL? That'll be open (and ready for use in real applications) soon! https://github.com/vlcn-io/typed-sql
 
 <a href="https://twitter.com/schickling/status/1599076832107630594"><img src="https://github.com/tantaman/TreeQL/assets/1009003/427e045e-3fae-4ad8-a3f1-60ca2849a240"/></a>
 
